@@ -10,9 +10,10 @@ const {
   TextInputStyle
 } = require('discord.js');
 const crypto = require('node:crypto');
-const { getGuildConfig } = require('../config/store');
+const { getGuildConfig, updateGuildConfig } = require('../config/store');
 const { ratingComponents, reviewActions } = require('../utils/components');
 const { hasAdministrator, hasAllowedRole } = require('../utils/permissions');
+const { refreshPanelAtBottom } = require('../utils/panel');
 
 const SESSION_TTL = 15 * 60 * 1000;
 
@@ -142,6 +143,14 @@ async function submitReview(interaction) {
     .setTimestamp();
 
   await logChannel.send({ embeds: [embed], components: [reviewActions()] });
+
+  if (config.panelChannelId === config.logChannelId) {
+    const refreshedConfig = await refreshPanelAtBottom(interaction.guild, config, logChannel);
+    if (refreshedConfig.panelMessageId !== config.panelMessageId) {
+      updateGuildConfig(interaction.guildId, { panelMessageId: refreshedConfig.panelMessageId });
+    }
+  }
+
   interaction.client.reviewSessions.delete(interaction.user.id);
   return interaction.update({ content: '✅ Thank you! Your review was submitted successfully.', components: [] });
 }
