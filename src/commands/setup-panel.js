@@ -4,7 +4,7 @@ const {
   SlashCommandBuilder
 } = require('discord.js');
 const { updateGuildConfig } = require('../config/store');
-const { buildPanel } = require('../utils/panel');
+const { buildPanel, pinWithoutNotice } = require('../utils/panel');
 
 module.exports = {
   data: new SlashCommandBuilder()
@@ -65,7 +65,7 @@ module.exports = {
     }
 
     const message = await channel.send(buildPanel(interaction.guild.name, emoji));
-    await message.pin();
+    await pinWithoutNotice(message);
 
     updateGuildConfig(interaction.guildId, {
       panelChannelId: channel.id,
