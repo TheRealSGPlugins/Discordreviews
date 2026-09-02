@@ -81,4 +81,6 @@ The bot token must exist only in `.env` locally or Render's secret environment v
 4. They press **Submit Rating**.
 5. The bot posts the final cyan-accented review card with their Discord avatar, review, rating, recommendation ID, and timestamp.
 
+When the panel channel and log channel are the same, the bot automatically recreates and repins the panel after every review. This keeps all completed reviews together while the submission panel remains the newest message at the bottom.
+
 Review sessions remain in memory for 15 minutes and are removed after submission or cancellation.
