@@ -1,13 +1,10 @@
 const {
-  ActionRowBuilder,
-  ButtonBuilder,
-  ButtonStyle,
   ChannelType,
-  EmbedBuilder,
   PermissionFlagsBits,
   SlashCommandBuilder
 } = require('discord.js');
 const { updateGuildConfig } = require('../config/store');
+const { buildPanel } = require('../utils/panel');
 
 module.exports = {
   data: new SlashCommandBuilder()
@@ -61,31 +58,13 @@ module.exports = {
       });
     }
 
-    const embed = new EmbedBuilder()
-      .setColor(0x32E0D5)
-      .setTitle('⭐ Share Your Experience')
-      .setDescription([
-        `Thank you for being part of **${interaction.guild.name}**!`,
-        '',
-        'Your experiences, opinions, and recommendations help our community grow. Press the button below to leave a review—it only takes a moment.'
-      ].join('\n'))
-      .setFooter({ text: 'Every review matters. Thank you for supporting our community.' });
-
-    const button = new ButtonBuilder()
-      .setCustomId('review:open')
-      .setLabel('Leave a Review')
-      .setStyle(ButtonStyle.Primary);
-
     try {
-      button.setEmoji(emoji);
+      buildPanel(interaction.guild.name, emoji);
     } catch {
       return interaction.reply({ content: 'That emoji is not valid. Try a standard emoji such as ⭐.', ephemeral: true });
     }
 
-    const message = await channel.send({
-      embeds: [embed],
-      components: [new ActionRowBuilder().addComponents(button)]
-    });
+    const message = await channel.send(buildPanel(interaction.guild.name, emoji));
     await message.pin();
 
     updateGuildConfig(interaction.guildId, {
