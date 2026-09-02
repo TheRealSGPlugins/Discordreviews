@@ -2,7 +2,8 @@ const {
   ActionRowBuilder,
   ButtonBuilder,
   ButtonStyle,
-  EmbedBuilder
+  EmbedBuilder,
+  MessageType
 } = require('discord.js');
 
 function buildPanel(guildName, emoji) {
@@ -28,6 +29,21 @@ function buildPanel(guildName, emoji) {
   };
 }
 
+async function pinWithoutNotice(message) {
+  const pinnedAt = Date.now();
+  await message.pin();
+
+  const recentMessages = await message.channel.messages.fetch({ limit: 10 }).catch(() => null);
+  if (!recentMessages) return;
+
+  const pinNotices = recentMessages.filter(candidate =>
+    candidate.type === MessageType.ChannelPinnedMessage
+    && candidate.createdTimestamp >= pinnedAt - 2_000
+  );
+
+  await Promise.all(pinNotices.map(notice => notice.delete().catch(() => null)));
+}
+
 async function refreshPanelAtBottom(guild, config, channel) {
   if (!config || config.panelChannelId !== config.logChannelId || channel.id !== config.panelChannelId) {
     return config;
@@ -35,7 +51,7 @@ async function refreshPanelAtBottom(guild, config, channel) {
 
   const oldPanel = await channel.messages.fetch(config.panelMessageId).catch(() => null);
   const newPanel = await channel.send(buildPanel(guild.name, config.emoji));
-  await newPanel.pin();
+  await pinWithoutNotice(newPanel);
 
   if (oldPanel) {
     await oldPanel.unpin().catch(() => null);
@@ -47,4 +63,4 @@ async function refreshPanelAtBottom(guild, config, channel) {
   return { ...config, panelMessageId: newPanel.id };
 }
 
-module.exports = { buildPanel, refreshPanelAtBottom };
+module.exports = { buildPanel, pinWithoutNotice, refreshPanelAtBottom };
