@@ -152,7 +152,10 @@ async function submitReview(interaction) {
   }
 
   interaction.client.reviewSessions.delete(interaction.user.id);
-  return interaction.update({ content: '✅ Thank you! Your review was submitted successfully.', components: [] });
+  await interaction.update({ content: '✅ Thank you! Your review was submitted successfully.', components: [] });
+  setTimeout(() => {
+    interaction.deleteReply().catch(() => null);
+  }, 5_000);
 }
 
 async function handleReport(interaction) {
